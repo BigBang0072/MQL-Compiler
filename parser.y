@@ -1,6 +1,8 @@
 %{
     	#include <stdio.h>
 	#include <string.h>
+	#include "parser_utility.c"
+
 	extern FILE *yyin;
 	int yylex(void);
 	void yyerror(const char *str);
@@ -47,6 +49,8 @@ int main(){
 		if(!yyparse()){
 			printf("fields:%s\n",fields);
 			printf("filename:%s\n",filename);
+			printf("Testing the header: %d\n",get_field_num('e',"ename"));
+			//printf("TEsting header: %d\n",num_emp_field);
 			printf("Success Man\n\n");
 		}
 		else{

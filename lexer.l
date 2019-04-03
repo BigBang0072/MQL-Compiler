@@ -1,4 +1,4 @@
-LETTER [a-zA-Z]
+LETTER [a-zA-Z_]
 DIGIT [0-9]
 
 %{
@@ -32,7 +32,7 @@ DIGIT [0-9]
 					//printf("into:%s\n",yytext);
 					return into;
 				}
-{LETTER}({LETTER}|{DIGIT})+ 	{
+{LETTER}({LETTER}|{DIGIT}|"\$")+ {
 					//printf("Name:%s\n",yytext);
 					yylval.str=strdup(yytext);
 					return Name;
