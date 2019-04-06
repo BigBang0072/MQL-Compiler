@@ -11,9 +11,10 @@ int main(){
     // printf("j: %d\n",j);
     //printf("val: %ld\n",strtol(" 123,abc",NULL,10));
 
-    void *ptr;
-    int temp=10;
-    ptr=&temp;
-    printf("%d\n",*(int *)ptr);
+    // void *ptr;
+    // int temp=10;
+    // ptr=&temp;
+    // printf("%d\n",*(int *)ptr);
+    printf("cond: %d\n",0 || 1 && 0 || 0);
     return 0;
 }

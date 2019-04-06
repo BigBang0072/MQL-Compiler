@@ -39,4 +39,19 @@ DEPT_Record* get_dept_object();
 //Getting the field number from the name
 int get_field_num(char table_name,char *field_name);
 
+
+//Defining the struct to hold the condition
+struct scond{
+    //will be either [and,or]  [>,<,=,>=,<=,==,!=]
+    char *op_name;
+
+    //These will be used when we will use the cond as leaf
+    char *field_name;
+    char *num_name;
+
+    //These will be active in place when this struct is not leaf
+    struct scond* left;
+    struct scond* right;
+};
+
 #endif

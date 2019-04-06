@@ -32,6 +32,35 @@ DIGIT [0-9]
 					//printf("into:%s\n",yytext);
 					return into;
 				}
+
+
+
+
+
+[gG][eE][tT]			{
+					return get;
+				}
+[fF][rR][oO][mM]		{
+					return from;
+				}
+[wW][hH][eE][rR][eE]		{
+					return where;
+				}
+([">""=""<"]["="]?)|("!=")	{
+					yylval.str=strdup(yytext);
+					return ops;
+				}
+[aA][nN][dD]			{
+					return and;
+				}
+[oO][rR]			{
+					return or;
+				}
+
+
+
+
+
 {LETTER}({LETTER}|{DIGIT}|"\$")+ {
 					//printf("name:%s\n",yytext);
 					yylval.str=strdup(yytext);
