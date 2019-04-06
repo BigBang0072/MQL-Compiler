@@ -1,2 +1,0 @@
-eid ename eage eaddress salary deptno
-1 Abhinav 23 123,XYZ 100 10

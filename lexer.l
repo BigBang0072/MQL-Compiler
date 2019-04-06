@@ -33,9 +33,14 @@ DIGIT [0-9]
 					return into;
 				}
 {LETTER}({LETTER}|{DIGIT}|"\$")+ {
-					//printf("Name:%s\n",yytext);
+					//printf("name:%s\n",yytext);
 					yylval.str=strdup(yytext);
-					return Name;
+					return name;
+				}
+{DIGIT}+			{
+					//printf("number:%s\n",yytext);
+					yylval.str=strdup(yytext);
+					return number;
 				}
 "\n"				{return 0;}
 [ ]				{}
