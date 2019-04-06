@@ -46,7 +46,7 @@ DIGIT [0-9]
 [wW][hH][eE][rR][eE]		{
 					return where;
 				}
-([">""=""<"]["="]?)|("!=")	{
+([">""<"]["="]?)|("!="|"==")	{
 					yylval.str=strdup(yytext);
 					return ops;
 				}

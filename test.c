@@ -15,6 +15,7 @@ int main(){
     // int temp=10;
     // ptr=&temp;
     // printf("%d\n",*(int *)ptr);
-    printf("cond: %d\n",0 || 1 && 0 || 0);
+    //printf("cond: %d\n",0 || 1 && 0 || 0);
+    //printf("%d\n",atoi("+123"));
     return 0;
 }

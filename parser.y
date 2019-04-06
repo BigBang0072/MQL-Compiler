@@ -38,7 +38,7 @@
 	QUERY:		INSERT_QUERY				{//Inserting into the table by creating record
 								insert_into_table(tentry,filename);}
 			|
-			GET_QUERY 				{};
+			GET_QUERY 				{get_from_table(fields,filename,root);};
 
 
 
@@ -90,7 +90,8 @@
 								root=($6);
 
 								//Printing and sanity test
-								printf("filename: %s\n",filename);
+								printf("\nfilename: %s\n",filename);
+								printf("fields: %s\n",fields);
 								printf("op:%s field:%s num:%s\n",root->op_name,root->field_name,root->num_name);
 								printf("c1op:%s c2op:%s \n",root->left->op_name,root->right->op_name);
 								};
@@ -212,6 +213,7 @@ int main(){
 			tentry[0]=0;
 			fields[0]=0;
 			filename[0]=0;
+			root=NULL;
 			printf("Success Man\n\n");
 		}
 		else{

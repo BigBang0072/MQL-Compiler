@@ -107,6 +107,28 @@ int get_integer(char buffer[]){
     int num=strtol(buffer,NULL,10);
     return num;
 }
+//Get a buffer record of appropriate type
+char* get_buffer_record(char filename[],char *rec_type,int *record_len){
+    /*
+    This function will initialize a buffer acc to table
+    */
+    char *record;
+    if(!strcmp(filename,emp_fname)){
+        record=get_record_array('e',record_len);
+        *rec_type='e';
+    }
+    else if(!strcmp(filename,dept_fname)){
+        record=get_record_array('d',record_len);
+        *rec_type='d';
+    }
+    else{
+        printf("Retry: Wrong file name given.\n");
+        return NULL;
+    }
+    printf("Initialized record array of type: %c and len:%d\n",\
+                                *rec_type,*record_len);
+    return record;
+}
 
 /////////////////////////////////////////////////////////////////////
 /*                  Handling the insert query                      */
@@ -145,20 +167,10 @@ void insert_into_table(char tentry[],char filename[]){
     char rec_type;
     int record_len;
     printf("\nInserting record to the table\n");
-    if(!strcmp(filename,emp_fname)){
-        record=get_record_array('e',&record_len);
-        rec_type='e';
-    }
-    else if(!strcmp(filename,dept_fname)){
-        record=get_record_array('d',&record_len);
-        rec_type='d';
-    }
-    else{
-        printf("Retry: Wrong file name given.\n");
+    record=get_buffer_record(filename,&rec_type,&record_len);
+    if(record==NULL){
         return;
     }
-    printf("Initialized record array of type: %c and len:%d\n",\
-                                rec_type,record_len);
 
     //Getting the file pointer
     FILE* fp=get_file_handle(filename,"a+");
@@ -237,4 +249,227 @@ void insert_into_table(char tentry[],char filename[]){
     fclose(fp);
     //Deallocating the record created from heap;
     free(record);
+}
+
+/////////////////////////////////////////////////////////////////////
+/*                 Handling the get query                          */
+/////////////////////////////////////////////////////////////////////
+void evaluate_record(int rec_num,char rec_type,int record_len,char *record,\
+                        char fields[],struct scond *root){
+    /*
+    This function will evaluate the record and print them if the condition
+    holds true for this particular record.
+    */
+    //Testing if the condition holds true for the fields
+    int eval=traverse_cond_tree(rec_type,record_len,record,root);
+
+    //If the condition holds then we will reterive the element and print
+    if(eval){
+        printf("Record:%d staisfies the condition\n",rec_num);
+        int fields_len=strlen(fields);
+        char field_buff[fields_len];
+        buff_idx=0;
+        for(int i=0;i<fields_len;i++){
+            if(fields[i]!=','){
+                field_buff[buff_idx]=fields[i];
+                buff_idx=0;
+            }
+            if(fields[i]==',' || (i==fields_len-1)){
+                //Appending end character to the string
+                field_buff[buff_idx]='\0';
+                //Now retreiving the field content
+                char *field_cont=get_field_from_record(field_buff,rec_type,\
+                                                        record);
+                //Printing the resutls
+                printf("%s, ",field_cont);
+
+                //Resetting the buffer index
+                buff_idx=0;
+            }
+            printf("\n");
+        }
+    }
+    return;
+
+}
+//Given a field name get the content of the record
+char* get_field_from_record(char *field_name,char rec_type,char* record){
+    /*
+    This function will retreive the value in the field and return it in
+    string buffer.
+    */
+    //Getting the field index
+    int fidx=get_field_num(rec_type,field_name);
+    //Getting the length of field
+    int flen;
+    if(rec_type=='e'){
+        flen=EMP_FSIZE[fidx];
+    }
+    else if(rec_type=='d'){
+        flen=DEPT_FSIZE[fidx];
+    }
+    else{
+        printf("Wrong record type mentioned. Retry\n");
+        exit(0);
+    }
+    //Calcualting the offset to start the string copying
+    int offset=0;
+    for(int i=0;i<fidx;i++){
+        if(rec_type=='e'){
+            offset+=EMP_FSIZE[i];
+        }
+        else{
+            offset+=DEPT_FSIZE[i];
+        }
+    }
+
+    //Now creating a string in heap to copy the string
+    char *field_cont=(char*)malloc(sizeof(flen+1));
+    field_cont[flen]='\0';
+    //Copying the content of record to the string
+    for(int i=0;i<flen;i++){
+        if(record[offset+i]!=' '){
+            field_cont[i]=record[offset+i];
+        }
+        else{
+            field_cont[i]='\0';
+            break;
+        }
+    }
+    return field_cont;
+}
+//Applying the comparison
+int apply_comparison_op(char rec_type,char *field_name,char *field_cont,\
+                            char *op_name,char *num_name){
+    /*
+    This function will aply the comparison operator to the field value and
+    the value mentioned in the consition.
+    */
+    //Retreiving the field type
+    int fidx=get_field_num(rec_type,field_name);
+    //Getting the field type
+    char ftype;
+    if(rec_type=='e' && EMP_FSIZE[fidx]==int_fsize){
+        ftype='i';
+    }
+    else if(rec_type=='d' && DEPT_FSIZE[fidx]==int_fsize){
+        ftype='i';
+    }
+    else{
+        ftype='s';
+    }
+
+    //Now comparing based on the operator and field type
+    if(!strcmp(op_name,">") && ftype=='i'){
+        if(atoi(field_cont)>atoi(num_name)){
+            return 1;
+        }
+        return 0;
+    }
+    else if(!strcmp(op_name,"==")){
+        if(ftype=='i' && (atoi(field_cont)==atoi(num_name))){
+            return 1;
+        }
+        else if(ftype=='s' && (!strcmp(field_cont,num_name))){
+            return 1;
+        }
+        return 0;
+    }
+    else if(!strcmp(op_name,"!=")){
+        if(ftype=='i' && (atoi(field_cont)!=atoi(num_name))){
+            return 1;
+        }
+        else if(ftype=='s' && strcmp(field_cont,num_name)){
+            return 1;
+        }
+        return 0;
+    }
+    else if(!strcmp(op_name,"<") && ftype=='i'){
+        if(atoi(field_cont)<atoi(num_name)){
+            return 1;
+        }
+        return 0;
+    }
+    else if(!strcmp(op_name,">=") && ftype=='i'){
+        if(atoi(field_cont)>=atoi(num_name)){
+            return 1;
+        }
+        return 0;
+    }
+    else if(!strcmp(op_name,"<=") && ftype=='i'){
+        if(atoi(field_cont)<=atoi(num_name)){
+            return 1;
+        }
+        return 0;
+    }
+    //Other wise the comparison is not valid
+    printf("Comparison not valid. Recheck the condition.\n")
+    return 0;
+}
+//Traversing the tree to evaluate condition on record.
+int traverse_cond_tree(char rec_type,int record_len,char *record,\
+                        struct scond *root){
+    /*
+    We will traverse the tree and evaluate the condition returning
+    whether this record satisfy the condition.
+    */
+    //Handling the base case (both will be NULL other wise both wont be)
+    if(root->left==NULL && root->right==NULL){
+        //ie when we are at the leaf node. only the comparaters are there
+        //Retreiving the field operator and number
+        char *field_name=root->field_name;
+        char *op_name=root->op_name;
+        char *num_name=root->num_name;
+
+        //Extracting the field value of form the record
+        char *field_cont=get_field_from_record(field_name,rec_type,record);
+        //Now applying the comparison operator
+        return apply_comparison_op(rec_type,field_name,field_cont,\
+                                    op_name,num_name);
+    }
+
+    //Now we are free of the comparison. We just have to handle the && or ||
+    //Solving left and right subproblem
+    int left_eval=traverse_cond_tree(rec_type,record_len,record,root->left);
+    int right_eval=traverse_cond_tree(rec_type,record_len,record,root->right);
+
+    if(!strcmp(root->op_name,"and")){
+        return left_eval && right_eval;
+    }
+    else if(!strcmp(root->op_name,"or")){
+        return left_eval || right_eval;
+    }
+    else{
+        printf("Wrong operator in the non-leaf node.Check code\n");
+        exit(0);
+    }
+    //Will never come
+    return 0;
+}
+//main handler for getting the records from the table.
+void get_from_table(char fields[],char filename[],struct scond *root){
+    /*
+    This function will read the table line by line and then evaluate
+    the condition stored in the condition tree and then retreive
+    those fields from the row and print them.
+    */
+    //Getting the temporary buffer based on the filename
+    char *record;
+    char rec_type;
+    int record_len;
+    printf("\nGetting records from the table\n");
+    record=get_buffer_record(filename,&rec_type,&record_len);
+    if(record==NULL){
+        return;
+    }
+    //Getting the filehandle
+    FILE* fp=get_file_handle(filename,"r");
+
+    //Getting the records one by one to check which one stays below
+    int rec_num=0;
+    while(fgets(record,record_len+1,fp)!=NULL){
+        //printf("%s",record);
+        evaluate_record(rec_num,rec_type,record_len,record,fields,root);
+        rec_num++;
+    }
 }
