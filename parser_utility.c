@@ -453,7 +453,20 @@ void free_up_cond_tree(struct scond *root){
     This fucntion will free up the memory allocated in the heap
     for getting rid of dangling pointer.
     */
-
+    //Freeing up the leaves node
+    if(root->left==NULL && root->right==NULL){
+        free(root->field_name);
+        free(root->op_name);
+        free(root->num_name);
+        return;
+    }
+    //Recusively freeing the left and right child
+    free_up_cond_tree(root->left);
+    free_up_cond_tree(root->right);
+    //Freeing up itself now once its decendent are destroyed
+    free(root->op_name);
+    free(root);
+    return;
 }
 //main handler for getting the records from the table.
 void get_from_table(char fields[],char filename[],struct scond *root){
@@ -484,5 +497,5 @@ void get_from_table(char fields[],char filename[],struct scond *root){
     }
 
     //Freeing up the full condition tree
-
+    free_up_cond_tree(root);
 }
