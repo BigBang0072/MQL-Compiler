@@ -53,5 +53,14 @@ struct scond{
     struct scond* left;
     struct scond* right;
 };
+//Get query handling
+void evaluate_record(int rec_num,char rec_type,int record_len,char *record,\
+                        char fields[],struct scond *root);
+char* get_field_from_record(char *field_name,char rec_type,char* record);
+int apply_comparison_op(char rec_type,char *field_name,char *field_cont,\
+                            char *op_name,char *num_name);
+int traverse_cond_tree(char rec_type,int record_len,char *record,\
+                        struct scond *root);
+void get_from_table(char fields[],char filename[],struct scond *root);
 
 #endif

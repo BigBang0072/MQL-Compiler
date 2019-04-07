@@ -268,7 +268,7 @@ void evaluate_record(int rec_num,char rec_type,int record_len,char *record,\
         printf("Record:%d staisfies the condition\n",rec_num);
         int fields_len=strlen(fields);
         char field_buff[fields_len];
-        buff_idx=0;
+        int buff_idx=0;
         for(int i=0;i<fields_len;i++){
             if(fields[i]!=','){
                 field_buff[buff_idx]=fields[i];
@@ -403,7 +403,7 @@ int apply_comparison_op(char rec_type,char *field_name,char *field_cont,\
         return 0;
     }
     //Other wise the comparison is not valid
-    printf("Comparison not valid. Recheck the condition.\n")
+    printf("Comparison not valid. Recheck the condition.\n");
     return 0;
 }
 //Traversing the tree to evaluate condition on record.
@@ -434,10 +434,10 @@ int traverse_cond_tree(char rec_type,int record_len,char *record,\
     int right_eval=traverse_cond_tree(rec_type,record_len,record,root->right);
 
     if(!strcmp(root->op_name,"and")){
-        return left_eval && right_eval;
+        return (left_eval && right_eval);
     }
     else if(!strcmp(root->op_name,"or")){
-        return left_eval || right_eval;
+        return (left_eval || right_eval);
     }
     else{
         printf("Wrong operator in the non-leaf node.Check code\n");
