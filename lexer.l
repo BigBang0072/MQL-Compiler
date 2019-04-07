@@ -78,7 +78,10 @@ DIGIT [0-9]
 				}
 
 
-
+[dD][eE][lL][eE][tT][eE]	{
+					//printf("got delete\n");
+					return delete;
+				}
 
 
 

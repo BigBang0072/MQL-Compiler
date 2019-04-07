@@ -37,13 +37,19 @@
 
 %token update in set to 
 
+%token delete
+
 %%
 	QUERY:		INSERT_QUERY				{//Inserting into the table by creating record
 								insert_into_table(tentry,filename);}
 			|
 			GET_QUERY 				{get_from_table(fields,filename,root);}
 			|
-			UPDATE_QUERY				{update_the_table(fields,tentry,filename,root);};
+			UPDATE_QUERY				{update_the_table(fields,tentry,filename,root);}
+			|
+			DELETE_QUERY				{
+								delete_from_table(filename,root);
+								};
 
 	
 	
@@ -59,7 +65,12 @@
 
 	
 
-
+	DELETE_QUERY:	delete record from name where Cond1	{
+								root=$6;
+								//Copying the filename
+								strcpy(filename,$4);
+								printf("filename:%s\n",filename);
+								};
 
 
 

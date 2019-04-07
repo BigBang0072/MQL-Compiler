@@ -640,7 +640,7 @@ void deleteLine(FILE *srcFile, FILE *tempFile,int delline[10000])
 	int count = 1;
 	int i = 0;
 	int line = delline[0];
-	while ((fgets(buffer, BUFFER_SIZE, srcFile)) != NULL)
+	while ((fgets(buffer, 1000, srcFile)) != NULL)
 	{
 		/* If current line is not the line user wanted to remove */
 		if (line != count)
@@ -679,7 +679,7 @@ void delete_from_table(char filename[], struct scond *root)
 	int rec_num = 0;
 	int delline[10000];
 	int i = 0;
-	printf("\nPlease Wait:Searching the database\n");
+	printf("\nPlease Wait:Deleting from the database\n");
 	while (fgets(record, record_len + 1, fp) != NULL)
 	{
 		rec_num++;
@@ -695,5 +695,5 @@ void delete_from_table(char filename[], struct scond *root)
 	fclose(fp);
 	fclose(tmp);
 	remove(filename);
-	rename("tmpfile.tmp", path);
+	rename("tmpfile.tmp",filename);
 }
