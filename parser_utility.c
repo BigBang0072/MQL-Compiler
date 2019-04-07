@@ -489,17 +489,144 @@ void get_from_table(char fields[],char filename[],struct scond *root){
 
     //Getting the records one by one to check which one stays below
     int rec_num=0;
+    printf("\n\n##################################################\n");
     printf("\nPlease Wait:Searching the database\n");
     while(fgets(record,record_len+1,fp)!=NULL){
         //printf("%s",record);
         evaluate_record(rec_num,rec_type,record_len,record,fields,root);
         rec_num++;
     }
+    printf("##################################################\n");
 
     //Freeing up the full condition tree
     free_up_cond_tree(root);
+    //Closing the file handle
+    free(fp);
 }
 
 ////////////////////////////////////////////////////////////////////
 /*                 Handling the update query                      */
 ////////////////////////////////////////////////////////////////////
+//Extracting the field value with which we have to update the rec
+int get_field_value_in_buffer(int scan_idx,char value_buff[],\
+                                                char tentry[]){
+    /*
+    This fucntion will extract the value with which we have to update
+    the field, filling them in spearate string buffer and return the
+    location to stsrt scanning next time.
+    */
+    int tentry_len=strlen(tentry);
+    int i=0;
+    while(scan_idx<tentry_len){
+        //No scanning till we reach the ',' symbol or the end of string
+        if(tentry[scan_idx]!=','){
+            value_buff[i]=tentry[scan_idx];
+            i++;
+            scan_idx++;
+        }
+        else{
+            break;
+        }
+    }
+    //Appending the endline char to the buffer
+    value_buff[i]='\0';
+    //Now next character to read is is one more than scan idx
+    scan_idx++;
+    return scan_idx;
+}
+//Function to update a single record
+void update_a_record(char fields[],char tentry[],char rec_type,\
+                                        char *record){
+    /*
+    This function will update the recod inserting the new values at
+    appropriate fields of this record.
+    */
+    //Traversing through the fields and updating with appropriate value
+    int field_len=strlen(fields);
+    int value_len=strlen(tentry);
+    //initializing the buffers
+    char field_buff[field_len];
+    char value_buff[value_len];
+    //Initializing the field buffer and value scan index
+    int fbuff_idx=0;
+    int scan_idx=0;
+
+    //Now updating one field at time
+    for(int i=0;i<field_len;i++){
+        if(fields[i]!=','){
+            field_buff[fbuff_idx]=fields[i];
+            fbuff_idx++;
+        }
+        if(fields[i]==',' || i==(field_len-1)){
+            //Appening the end of field name
+            field_buff[fbuff_idx]='\0';
+            //Extracting out the value to append to field
+            scan_idx=get_field_value_in_buffer(scan_idx,\
+                                            value_buff,tentry);
+            //printf("Updating field:%s with:%s\n",field_buff,value_buff);
+
+            //Now getting the index of the field to update
+            int field_num=get_field_num(rec_type,field_buff);
+            //Inserting the value to the field location
+            if(rec_type=='e'){
+                insert_field_into_record(field_num,value_buff,\
+                                            record,EMP_FSIZE);
+            }
+            else{
+                insert_field_into_record(field_num,value_buff,\
+                                            record,DEPT_FSIZE);
+            }
+            //Making the buffer index to zero
+            fbuff_idx=0;
+        }
+    }
+}
+//main handler function for updating the record
+void update_the_table(char fields[],char tentry[],\
+                        char filename[],struct scond *root){
+    /*
+    This function will update the table with the appropriate value
+    wherever the condition matches.
+    */
+    //Generating appropriate record for holding the buffer value
+    char *record;
+    char rec_type;
+    int record_len;
+    printf("\nGetting records from the table\n");
+    record=get_buffer_record(filename,&rec_type,&record_len);
+    if(record==NULL){
+        return;
+    }
+    //Getting the filehandle
+    FILE* fp=get_file_handle(filename,"r+");
+
+    //Now iterating over the file to update the table
+    int record_num=0;
+    printf("\n\n##################################################\n");
+    printf("\nPlease Wait:Updating the database\n");
+    // printf("fp:%ld\n",ftell(fp));
+    // printf("rlen:%d\n\n",record_len);
+    while(fgets(record,record_len+1,fp)){
+        //Testing if the condition holds for this record
+        int eval=traverse_cond_tree(rec_type,record_len,record,root);
+        //Now updating the line if the condition evaluate to true
+        if(eval){
+            //Now we have to update the appropriate fields in record
+            printf("\nUpdating the record_num:%d\n",record_num);
+            //Updating the record
+            update_a_record(fields,tentry,rec_type,record);
+            printf("Updated row is:\n%s",record);
+
+            //Now we have to reflect the update to the file
+            //Rewinding the file pointer to locatio it read the record
+            fseek(fp,record_len*record_num,SEEK_SET);
+            //Writing the record to file
+            fputs(record,fp);
+        }
+        //Incrementing the record num
+        record_num++;
+    }
+    printf("##################################################\n");
+    //Closing the file handle
+    fclose(fp);
+}

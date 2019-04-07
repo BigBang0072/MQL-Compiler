@@ -43,7 +43,7 @@
 			|
 			GET_QUERY 				{get_from_table(fields,filename,root);}
 			|
-			UPDATE_QUERY				{};
+			UPDATE_QUERY				{update_the_table(fields,tentry,filename,root);};
 
 	
 	
