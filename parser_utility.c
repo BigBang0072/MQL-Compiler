@@ -630,3 +630,70 @@ void update_the_table(char fields[],char tentry[],\
     //Closing the file handle
     fclose(fp);
 }
+
+////////////////////////////////////////////////////////////////////
+/*                 Handling the delete query                      */
+////////////////////////////////////////////////////////////////////
+void deleteLine(FILE *srcFile, FILE *tempFile,int delline[10000])
+{
+	char buffer[1000];
+	int count = 1;
+	int i = 0;
+	int line = delline[0];
+	while ((fgets(buffer, BUFFER_SIZE, srcFile)) != NULL)
+	{
+		/* If current line is not the line user wanted to remove */
+		if (line != count)
+		{
+			fputs(buffer, tempFile);
+		}
+		else
+		{
+			i++;
+			line = delline[i];
+		}
+		count++;
+	}
+}
+void delete_from_table(char filename[], struct scond *root)
+{
+	/*
+	This function will read the table line by line and then evaluate
+	the condition stored in the condition tree and then retreive
+	those fields from the row and print them.
+	*/
+	//Getting the temporary buffer based on the filename
+	printf("In delete record\n");
+	char *record;
+	char rec_type;
+	int record_len;
+	printf("\nGetting records from the table\n");
+	record = get_buffer_record(filename, &rec_type, &record_len);
+	if (record == NULL) {
+		return;
+	}
+	//Getting the filehandle
+	FILE* fp = get_file_handle(filename, "r");
+	FILE* tmp = fopen("tmpfile.tmp", "w");
+	//Getting the records one by one to check which one stays below
+	int rec_num = 0;
+	int delline[10000];
+	int i = 0;
+	printf("\nPlease Wait:Searching the database\n");
+	while (fgets(record, record_len + 1, fp) != NULL)
+	{
+		rec_num++;
+		if (traverse_cond_tree(rec_type, record_len, record, root))
+		{
+			delline[i] = rec_num;
+			i++;
+		}
+	}
+	delline[i] = 10000;
+	rewind(fp);
+	deleteLine(fp,tmp,delline);
+	fclose(fp);
+	fclose(tmp);
+	remove(filename);
+	rename("tmpfile.tmp", path);
+}
