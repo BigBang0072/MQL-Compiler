@@ -30,16 +30,35 @@
 
 %token get from where and or
 %token <str> ops
-%type <str> Value
+%type <str> CValue
 %type <sc> Cond
 %type <sc> Cond1
 %type <sc> Cond2
+
+%token update in set to 
 
 %%
 	QUERY:		INSERT_QUERY				{//Inserting into the table by creating record
 								insert_into_table(tentry,filename);}
 			|
-			GET_QUERY 				{get_from_table(fields,filename,root);};
+			GET_QUERY 				{get_from_table(fields,filename,root);}
+			|
+			UPDATE_QUERY				{};
+
+	
+	
+
+	UPDATE_QUERY:	update record in name set Fields to Enteries where Cond1	{
+											//Assigning the condition to the root for argument
+											root=$10;
+											printf("Fields to update: %s\n",fields);
+											printf("Entries to fill: %s\n",tentry);
+											strcpy(filename,$4);
+											printf("Filename to change :%s\n",filename);
+											};
+
+	
+
 
 
 
@@ -85,6 +104,11 @@
 
 
 
+
+
+
+
+
       GET_QUERY:	get Fields from name where Cond1	{
 								strcpy(filename,$4);
 								//Getting the condition statement tree's root
@@ -100,12 +124,12 @@
       Fields:		Fields comma name			{
 								strcat(fields,",");
 								strcat(fields,$3);
-								printf("Field:%s\n",fields);
+								//printf("Field:%s\n",fields);
 								}
 			|
 			name					{
 								strcpy(fields,$1);
-								printf("Field:%s\n",fields);								
+								//printf("Field:%s\n",fields);								
 								};
 
       Cond1:		Cond1 or Cond2				{//Now its time to make new node
@@ -178,7 +202,7 @@
 								$<sc->right>$=$<sc->right>1;
 								};
 
-      Cond:		name ops Value				{
+      Cond:		name ops CValue				{
 								//Getting the number operator and field as a string
 								//Deallocate appropriately later.
 								char *nstr=(char*)malloc(sizeof(char)*strlen($1));
@@ -203,7 +227,7 @@
 								$<sc->right>$=NULL;
 								};
   
-    Value:		name					{
+    CValue:		name					{
 								$$=(char*)malloc(sizeof(char)*strlen($1));
 								strcpy($$,$1);
 								}
@@ -212,6 +236,12 @@
 								$$=(char*)malloc(sizeof(char)*strlen($1));
 								strcpy($$,$1);
 								};
+
+
+
+
+
+
 %%
 
 int main(){

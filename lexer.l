@@ -61,6 +61,30 @@ DIGIT [0-9]
 
 
 
+
+
+[uU][pP][dD][aA][tT][eE]	{
+					return update;
+				}
+[iI][nN]			{
+					return in;
+				}
+
+[sS][eE][tT]			{
+					return set;
+				}
+[tT][oO]			{
+					return to;
+				}
+
+
+
+
+
+
+
+
+
 {LETTER}({LETTER}|{DIGIT}|"\$")+ {
 					//printf("name:%s\n",yytext);
 					yylval.str=strdup(yytext);

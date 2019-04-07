@@ -499,3 +499,7 @@ void get_from_table(char fields[],char filename[],struct scond *root){
     //Freeing up the full condition tree
     free_up_cond_tree(root);
 }
+
+////////////////////////////////////////////////////////////////////
+/*                 Handling the update query                      */
+////////////////////////////////////////////////////////////////////
