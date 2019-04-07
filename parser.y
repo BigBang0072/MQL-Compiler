@@ -30,6 +30,7 @@
 
 %token get from where and or
 %token <str> ops
+%type <str> Value
 %type <sc> Cond
 %type <sc> Cond1
 %type <sc> Cond2
@@ -93,15 +94,19 @@
 								printf("\nfilename: %s\n",filename);
 								printf("fields: %s\n",fields);
 								printf("op:%s field:%s num:%s\n",root->op_name,root->field_name,root->num_name);
-								printf("c1op:%s c2op:%s \n",root->left->op_name,root->right->op_name);
+								//printf("c1op:%s c2op:%s \n",root->left->op_name,root->right->op_name);
 								};
 
       Fields:		Fields comma name			{
 								strcat(fields,",");
 								strcat(fields,$3);
+								printf("Field:%s\n",fields);
 								}
 			|
-			name					{strcat(fields,$1);};
+			name					{
+								strcpy(fields,$1);
+								printf("Field:%s\n",fields);								
+								};
 
       Cond1:		Cond1 or Cond2				{//Now its time to make new node
 								//Creating new string for op
@@ -157,7 +162,7 @@
 								//Filling NULL to leaf attributes
 								$<sc->field_name>$=NULL;
 								$<sc->num_name>$=NULL;
-								};
+								}
 			|
 			Cond					{
 								//making the condition struct
@@ -173,7 +178,7 @@
 								$<sc->right>$=$<sc->right>1;
 								};
 
-      Cond:		name ops number				{
+      Cond:		name ops Value				{
 								//Getting the number operator and field as a string
 								//Deallocate appropriately later.
 								char *nstr=(char*)malloc(sizeof(char)*strlen($1));
@@ -196,6 +201,16 @@
 								//Indicating that there is no furthur child
 								$<sc->left>$=NULL;
 								$<sc->right>$=NULL;
+								};
+  
+    Value:		name					{
+								$$=(char*)malloc(sizeof(char)*strlen($1));
+								strcpy($$,$1);
+								}
+			|
+			number					{
+								$$=(char*)malloc(sizeof(char)*strlen($1));
+								strcpy($$,$1);
 								};
 %%
 

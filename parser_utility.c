@@ -272,12 +272,13 @@ void evaluate_record(int rec_num,char rec_type,int record_len,char *record,\
         for(int i=0;i<fields_len;i++){
             if(fields[i]!=','){
                 field_buff[buff_idx]=fields[i];
-                buff_idx=0;
+                buff_idx++;
             }
             if(fields[i]==',' || (i==fields_len-1)){
                 //Appending end character to the string
                 field_buff[buff_idx]='\0';
                 //Now retreiving the field content
+                //printf("field name:%s\n",field_buff);
                 char *field_cont=get_field_from_record(field_buff,rec_type,\
                                                         record);
                 //Printing the resutls
@@ -286,8 +287,8 @@ void evaluate_record(int rec_num,char rec_type,int record_len,char *record,\
                 //Resetting the buffer index
                 buff_idx=0;
             }
-            printf("\n");
         }
+        printf("\n");
     }
     return;
 
@@ -446,6 +447,14 @@ int traverse_cond_tree(char rec_type,int record_len,char *record,\
     //Will never come
     return 0;
 }
+//Free up the pointers used in condition tree
+void free_up_cond_tree(struct scond *root){
+    /*
+    This fucntion will free up the memory allocated in the heap
+    for getting rid of dangling pointer.
+    */
+
+}
 //main handler for getting the records from the table.
 void get_from_table(char fields[],char filename[],struct scond *root){
     /*
@@ -467,9 +476,13 @@ void get_from_table(char fields[],char filename[],struct scond *root){
 
     //Getting the records one by one to check which one stays below
     int rec_num=0;
+    printf("\nPlease Wait:Searching the database\n");
     while(fgets(record,record_len+1,fp)!=NULL){
         //printf("%s",record);
         evaluate_record(rec_num,rec_type,record_len,record,fields,root);
         rec_num++;
     }
+
+    //Freeing up the full condition tree
+
 }
